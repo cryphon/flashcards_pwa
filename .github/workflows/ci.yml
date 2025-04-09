@@ -1,34 +1,24 @@
 name: CI
-
 on:
   push:
     branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
-
 env:
   CI: false
-
 jobs:
   build:
-
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    
-    permissions:
-      contents: 'read'
-      id-token: 'write'
-      pages: 'write'
-      actions: 'write'
-      checks: 'write'
-      deployments: 'write'
     strategy:
       matrix:
         node-version: [18.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
     steps:
     - uses: actions/checkout@v3
     - name: Use Node.js ${{ matrix.node-version }}
@@ -37,25 +27,19 @@ jobs:
         node-version: ${{ matrix.node-version }}
         cache: 'npm'
     - name: Install dependencies
-      # Using npm ci is generally faster than running npm i because it caches dependencies
-      run: |
-        npm ci
+      run: npm ci
     - name: Build the app
-      run: |
-        npm run build
+      run: npm run build
     - name: Run component tests
-      run: |
-        npm run test
-        
+      run: npm run test
     - name: Setup Pages
       uses: actions/configure-pages@v3
     - name: Upload artifact
-      uses: actions/upload-pages-artifact@v1
+      uses: actions/upload-pages-artifact@v2
       with:
-        # Upload build directory content
         path: 'build/'
     - name: Deploy to GitHub Pages
       id: deployment
-      uses: actions/deploy-pages@v1
-      env:  
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: actions/deploy-pages@v2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
